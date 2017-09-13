@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  db:
+    image: "mysql:5.7"
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_ONETIME_PASSWORD: "yes"
+      MYSQL_USER: "jwtauth"
+      MYSQL_PASSWORD: "jwtauth"
+      MYSQL_DATABASE: "jwtauthdb"
+    volumes:
+    - "mysql-data:/var/lib/mysql/"
+    - "/etc/localtime:/etc/localtime:ro"
+    networks:
+    - backend
+
+  api:
+    build: "./api"
+    image: "basic-jwt:0.1"
+    environment:
+      PORT: 8080
+    ports:
+    - 3000:3000
+    volumes:
+    - "./api:/go/src/github.com/fesiqp/jwtauth/api"
+    - "/etc/localtime:/etc/localtime:ro"
+    networks:
+    - backend
+
+networks:
+  backend:
+
+volumes:
+  mysql-data:
