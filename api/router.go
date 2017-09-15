@@ -10,18 +10,60 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter(h *handlers.Handler) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+type Route struct {
+	Name        string
+	Method      string
+	Pattern     string
+	HandlerFunc http.HandlerFunc
+}
 
-	router.HandleFunc("/", Log(h.Index, "Index")).Methods("GET")
-	router.HandleFunc("/register", Log(h.RegisterUser, "Register User")).Methods("POST")
-	router.HandleFunc("/users/email/{email}", Log(h.FindUserByEmail, "Find user by email")).Methods("GET")
-	router.HandleFunc("/users", Log(h.FindAllUsers, "Find all users")).Methods("GET")
+type Routes []Route
+
+func NewRouter(h *handlers.Handler) *mux.Router {
+	var routes = Routes{
+		Route{
+			"Index route",
+			"GET",
+			"/",
+			h.Index,
+		},
+		Route{
+			"Register User",
+			"POST",
+			"/register",
+			h.RegisterUser,
+		},
+		Route{
+			"Find User by Email",
+			"GET",
+			"/users/email/{email}",
+			h.FindUserByEmail,
+		},
+		Route{
+			"Find all Users",
+			"GET",
+			"/users",
+			h.FindAllUsers,
+		},
+	}
+
+	router := mux.NewRouter().StrictSlash(true)
+	for _, route := range routes {
+		var handler http.Handler
+
+		handler = route.HandlerFunc
+		handler = Log(handler, route.Name)
+		router.
+			Methods(route.Method).
+			Path(route.Pattern).
+			Name(route.Name).
+			Handler(handler)
+	}
 
 	return router
 }
 
-func Log(h http.HandlerFunc, name string) http.HandlerFunc {
+func Log(h http.Handler, name string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := log.New(os.Stdout, "[ROUTE] ", log.LstdFlags)
 		start := time.Now()

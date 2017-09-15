@@ -29,12 +29,14 @@ func (h *Handler) FindUserByEmail(w http.ResponseWriter, r *http.Request) {
 		Email:    u.Email,
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(res)
 }
 
 func (h *Handler) FindAllUsers(w http.ResponseWriter, r *http.Request) {
 	u, _ := h.DB.FindAllUsers()
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(u)
 
 }
