@@ -31,3 +31,10 @@ func (h *Handler) FindUserByEmail(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(res)
 }
+
+func (h *Handler) FindAllUsers(w http.ResponseWriter, r *http.Request) {
+	u, _ := h.DB.FindAllUsers()
+
+	json.NewEncoder(w).Encode(u)
+
+}

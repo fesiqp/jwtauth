@@ -7,6 +7,7 @@ import "github.com/jinzhu/gorm"
 type UserStorer interface {
 	CreateUser(*User) error
 	FindUserByEmail(string) (*User, error)
+	FindAllUsers() ([]*User, error)
 }
 
 type User struct {
@@ -59,4 +60,12 @@ func (db *DB) FindUserByEmail(email string) (*User, error) {
 	}
 
 	return &u, nil
+}
+
+func (db *DB) FindAllUsers() ([]*User, error) {
+	users := make([]*User, 0)
+
+	db.Find(&users)
+
+	return users, nil
 }

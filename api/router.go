@@ -15,7 +15,8 @@ func NewRouter(h *handlers.Handler) *mux.Router {
 
 	router.HandleFunc("/", Log(h.Index, "Index")).Methods("GET")
 	router.HandleFunc("/register", Log(h.RegisterUser, "Register User")).Methods("POST")
-	router.HandleFunc("/user/email/{email}", Log(h.FindUserByEmail, "Find user by email")).Methods("GET")
+	router.HandleFunc("/users/email/{email}", Log(h.FindUserByEmail, "Find user by email")).Methods("GET")
+	router.HandleFunc("/users", Log(h.FindAllUsers, "Find all users")).Methods("GET")
 
 	return router
 }
