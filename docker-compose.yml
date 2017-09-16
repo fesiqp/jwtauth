@@ -20,6 +20,7 @@ services:
     image: "basic-jwt:0.1"
     environment:
       PORT: 8080
+      JWT_SIGN_KEY: "secret"
     ports:
     - 3000:3000
     volumes:

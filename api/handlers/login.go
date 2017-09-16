@@ -1,8 +1,15 @@
 package handlers
 
-import "net/http"
-import "encoding/json"
-import "golang.org/x/crypto/bcrypt"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"time"
+
+	jwt "github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type LoginUser struct {
 	Email    string
@@ -33,13 +40,47 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Email or Password incorrect", http.StatusUnauthorized)
 		return
 	}
+
+	token, err := NewToken(loginUser)
+	if err != nil {
+		h.Logger.Println(err)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
 	res := &User{
 		Username: user.Username,
 		Email:    user.Email,
-		Token:    "placeholder",
+		Token:    token,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Add("Authorization", "Bearer "+res.Token)
 	json.NewEncoder(w).Encode(res)
+}
+
+func JWTSignKey() ([]byte, error) {
+	jwtString := os.Getenv("JWT_SIGN_KEY")
+	if len(jwtString) == 0 {
+		return []byte{}, fmt.Errorf("Login failed")
+	}
+	return []byte(jwtString), nil
+}
+
+func NewToken(user *LoginUser) (string, error) {
+	claims := jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		Issuer:    "jwtauth",
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtSignKey, err := JWTSignKey()
+	if err != nil {
+		return "", err
+	}
+
+	tokenString, err := token.SignedString(jwtSignKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
