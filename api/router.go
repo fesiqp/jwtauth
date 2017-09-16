@@ -34,6 +34,12 @@ func NewRouter(h *handlers.Handler) *mux.Router {
 			h.RegisterUser,
 		},
 		Route{
+			"Login User",
+			"POST",
+			"/login",
+			h.Login,
+		},
+		Route{
 			"Find User by Email",
 			"GET",
 			"/users/email/{email}",

@@ -8,14 +8,9 @@ import (
 )
 
 func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
-	body := struct {
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}{}
-	u := &body
+	u := &models.User{}
 
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err := json.NewDecoder(r.Body).Decode(&u)
 	if err != nil {
 		h.Logger.Println(err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
