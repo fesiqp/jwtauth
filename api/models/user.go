@@ -7,6 +7,7 @@ import "github.com/jinzhu/gorm"
 type UserStorer interface {
 	CreateUser(*User) error
 	FindUserByEmail(string) (*User, error)
+	FindUserByUsername(string) (*User, error)
 	FindAllUsers() ([]*User, error)
 }
 
@@ -57,6 +58,17 @@ func (db *DB) FindUserByEmail(email string) (*User, error) {
 	db.Find(&u, "email = ?", email)
 	if u == (User{}) {
 		return nil, fmt.Errorf("No user found with email: %s", email)
+	}
+
+	return &u, nil
+}
+
+func (db *DB) FindUserByUsername(username string) (*User, error) {
+	u := User{}
+
+	db.Find(&u, "username = ?", username)
+	if u == (User{}) {
+		return nil, fmt.Errorf("No user found with this username: %s", username)
 	}
 
 	return &u, nil

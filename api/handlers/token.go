@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -22,23 +22,31 @@ func NewAuthorization(authSlice []string) *Authorization {
 	}
 }
 
-func ValidateTokenMiddleware(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := log.New(os.Stdout, "[ROUTE] ", log.LstdFlags)
+func JWTSignKey() ([]byte, error) {
+	jwtString := os.Getenv("JWT_SIGN_KEY")
+	if len(jwtString) == 0 {
+		return []byte{}, fmt.Errorf("Login failed")
+	}
+	return []byte(jwtString), nil
+}
 
-		token, err := ValidateToken(r)
-		if err != nil {
-			logger.Println(err)
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-		switch token.Valid {
-		case true:
-			h.ServeHTTP(w, r)
-		default:
-			fmt.Fprintln(w, "Token is invalid")
-		}
-	})
+func NewToken() (string, error) {
+	claims := jwt.StandardClaims{
+		ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		Issuer:    "jwtauth",
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	jwtSignKey, err := JWTSignKey()
+	if err != nil {
+		return "", err
+	}
+
+	tokenString, err := token.SignedString(jwtSignKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
 }
 
 func ValidateToken(r *http.Request) (*jwt.Token, error) {
@@ -53,7 +61,7 @@ func ValidateToken(r *http.Request) (*jwt.Token, error) {
 	}
 
 	auth := NewAuthorization(authHeaderSlice)
-	if auth.Scheme != "Bearer" {
+	if auth.Scheme != "Bearer" && auth.Scheme != "Token" {
 		return nil, fmt.Errorf("Only Bearer or Token allowed")
 	}
 

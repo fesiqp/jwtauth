@@ -48,6 +48,13 @@ func NewRouter(h *handlers.Handler) *mux.Router {
 			true,
 		},
 		Route{
+			"Find User by Username",
+			"GET",
+			"/users/{username}",
+			h.FindUserByUsername,
+			true,
+		},
+		Route{
 			"Find all Users",
 			"GET",
 			"/users",
