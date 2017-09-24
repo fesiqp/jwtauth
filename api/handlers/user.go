@@ -59,9 +59,19 @@ func (h *Handler) FindUserByUsername(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) FindAllUsers(w http.ResponseWriter, r *http.Request) {
-	u, _ := h.DB.FindAllUsers()
+	u, err := h.DB.FindAllUsers()
+	if err != nil {
+		h.Logger.Println(err)
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(u)
+	users := make([]*User, len(u))
+	for index, user := range u {
+		users[index] = &User{Username: user.Username, Email: user.Email}
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(users)
 
 }

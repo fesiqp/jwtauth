@@ -37,5 +37,6 @@ func (h *Handler) RegisterUser(w http.ResponseWriter, r *http.Request) {
 		Email:    m.Email,
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(res)
 }

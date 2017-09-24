@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	jwt "github.com/dgrijalva/jwt-go"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,7 +30,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUser.Password))
 	if err != nil {
 		h.Logger.Println(err)
-		http.Error(w, "Email or Password incorrect", http.StatusUnauthorized)
+		http.Error(w, "Email or password incorrect", http.StatusUnauthorized)
 		return
 	}
 
@@ -42,9 +44,26 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	res := &User{
 		Username: user.Username,
 		Email:    user.Email,
-		Token:    token,
+		Token:    CheckActive(user.Email, token),
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(res)
+}
+
+var activeUsers = make(map[string]string) // [email]token
+
+// CheckActive validates if an user is already authenticated
+// If so, the JWT is re-sent, otherwise, a new JWT is generated.
+func CheckActive(email string, token string) string {
+	if tkn, ok := activeUsers[email]; ok {
+		jwtToken, _ := jwt.Parse(tkn, keyFunc)
+		if jwtToken.Valid {
+			return tkn
+		}
+		activeUsers[email] = token
+		return token
+	}
+	activeUsers[email] = token
+	return token
 }

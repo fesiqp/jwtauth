@@ -8,6 +8,7 @@ import (
 
 func ValidateTokenMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		logger := log.New(os.Stdout, "[ROUTE] ", log.LstdFlags)
 
 		token, err := ValidateToken(r)

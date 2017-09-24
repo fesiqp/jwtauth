@@ -31,8 +31,9 @@ func JWTSignKey() ([]byte, error) {
 }
 
 func NewToken() (string, error) {
-	claims := jwt.StandardClaims{
+	claims := &jwt.StandardClaims{
 		ExpiresAt: time.Now().Add(time.Hour * 1).Unix(),
+		IssuedAt:  time.Now().Unix(),
 		Issuer:    "jwtauth",
 	}
 

@@ -78,6 +78,9 @@ func (db *DB) FindAllUsers() ([]*User, error) {
 	users := make([]*User, 0)
 
 	db.Find(&users)
+	if len(users) == 0 {
+		return nil, fmt.Errorf("No user found")
+	}
 
 	return users, nil
 }
