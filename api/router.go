@@ -5,6 +5,7 @@ import (
 
 	"github.com/fesiqp/jwtauth/api/handlers"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type Route struct {
@@ -68,7 +69,7 @@ func NewRouter(h *handlers.Handler) *mux.Router {
 		var handler http.Handler
 
 		handler = route.HandlerFunc
-		handler = Log(handler, route.Name)
+		handler = cors.Default().Handler(Log(handler, route.Name))
 		r := router.
 			Methods(route.Method).
 			Path(route.Pattern).
